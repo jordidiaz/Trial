@@ -9,6 +9,10 @@ services.AddControllers();
 services.AddScoped<IRobotService, RobotService>();
 services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("techtestdb"));
 services.AddSwaggerGen();
+services.AddScoped<INotificationService, EngineeringNotificationService>();
+services.AddScoped<INotificationService, CustomerNotificationService>();
+services.AddScoped<INotificationService, InvoicingNotificationService>();
+services.AddScoped<Repository>();
 
 var app = builder.Build();
 

@@ -25,10 +25,11 @@ namespace TechTest
             services.AddControllers();
 
             services.AddScoped<IRobotService, RobotService>();
-
-            services.AddDbContext<Data.DataContext>(opt => opt.UseInMemoryDatabase("techtestdb"));
+            
+            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("techtestdb"));
 
             services.AddSwaggerGen();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -9,11 +9,13 @@ namespace TechTest.Controllers;
 [Route("[controller]")]
 public class RobotsController : ControllerBase
 {
-    private readonly DataContext _context;
+    private readonly IEnumerable<INotificationService> _notificationServices;
+    private readonly Repository _repository;
 
-    public RobotsController(DataContext context)
+    public RobotsController(IEnumerable<INotificationService> notificationServices, Repository repository)
     {
-        this._context = context;
+        _notificationServices = notificationServices;
+        _repository = repository;
     }
 
     [HttpGet("required_rooms")]
@@ -25,23 +27,19 @@ public class RobotsController : ControllerBase
     [HttpGet("available")]
     public async Task<IActionResult> GetAvailable(string condition)
     {
-        var repository = new Repository(_context);
 
-        var robotResult = await repository.GetRobots(x => x.ConditionExpertise == condition);
+        var robotResult = await _repository.GetRobots(x => x.ConditionExpertise == condition);
         
         robotResult.ForEach(r => 
         {
-            new EngineeringNotificationService().NotifyRobotSelected(r.Id);
-            new CustomerNotificationService().NotifyRobotSelected(r.Id);
-            new InvoicingNotificationService().NotifyRobotSelected(r.Id);
+            foreach (var notificationService in _notificationServices)
+            {
+                notificationService.NotifyRobotSelected(r.Id);
+            }
         });
 
-        var response = new List<object>();
-        for (int j = 0; j < robotResult.Count; j++)
-        {
-            response.Add(new { id = robotResult[j].Id, conditionExpertise = robotResult[j].ConditionExpertise });
-        }
-
-        return base.Ok(response);
+        return base.Ok(robotResult.Select(robot => new RobotDto(robot.Id, robot.ConditionExpertise)));
     }
 }
+
+public record RobotDto(int Id, string ConditionExpertise);
