@@ -25,10 +25,13 @@ public class RobotsController : ControllerBase
     }
 
     [HttpGet("available")]
-    public async Task<IActionResult> GetAvailable(string condition)
+    public async Task<IActionResult> GetAvailable(string condition, DateTime date)
     {
 
         var robotResult = await _repository.GetRobots(x => x.ConditionExpertise == condition);
+
+        robotResult = robotResult.FindAll(r =>
+            !r.Appointments.ToList().Exists(a => a.StartDate <= date && date < a.EndDate));
         
         robotResult.ForEach(r => 
         {
